@@ -1,88 +1,741 @@
+4, [25.10.26 16:00]
 <!DOCTYPE html>
-<html lang="ru"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Подготовка к ОГЭ</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#1c1714;--panel:#271f1a;--line:#40342b;--text:#efe4d6;--dim:#a99886;--acc:#cdb083;--on:#1c1714;--ok:#4f9d63;--bad:#d46a6a}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Manrope,system-ui,sans-serif;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
-main{max-width:760px;margin:0 auto}
-h1{font-size:21px;margin:6px 0}h2{font-size:17px;margin:18px 0 6px;color:var(--acc)}
-.top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
-.card.done{border-color:var(--ok)}a.card{display:block;color:inherit;text-decoration:none}
-.dim{color:var(--dim);font-size:14px}
-button,input{font:inherit;color:inherit;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
-button{cursor:pointer;font-weight:700}button.p{background:var(--acc);color:var(--on);border-color:var(--acc)}
-input{min-width:0;flex:1}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.msg{margin-top:8px;font-weight:700}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
-.sol{margin-top:10px;padding:10px;border-left:3px solid var(--acc);color:var(--dim);white-space:pre-line}
-img.tk,.pg img{max-width:100%;border-radius:10px;border:1px solid var(--line);margin:8px 0;background:#fff}
-.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 2px}.bar i{display:block;height:100%;background:var(--acc);width:0}
-.th{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.th button{padding:6px 10px;font-size:13px}
-summary{cursor:pointer;font-weight:700}
-</style></head><body><main>
-<div class="top"><button id="back" hidden>← Назад</button><b id="ttl"></b><button id="thb">Темы</button></div>
-<div id="thp" class="card" hidden></div>
-<div id="view"></div>
-</main><script>
-const $=s=>document.querySelector(s);
-const h=(t,a={},...k)=>{const e=document.createElement(t);Object.assign(e,a);k.flat().forEach(x=>e.append(x));return e};
-const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-const ID=/^[a-z0-9_-]+$/;
-const get=async p=>{const r=await fetch('data/'+p+'.json');if(!r.ok)throw 0;return r.json()};
-/* ---- темы ---- */
-const TH=[['Мокко','#1c1714','#cdb083'],['Терракота','#f2e6d6','#91523a'],['Алый туман','#f4f7f0','#a84d57'],['Лесной крем','#16261a','#a8c2a5'],['Бронзовая ночь','#161d35','#cfaa7a'],['Олива и вино','#47202a','#b7b886'],['Ржавчина','#eee3c8','#8a4a45'],['Мох и слоновая кость','#faf6e4','#5c6838']];
-const mix=(a,b,t)=>{const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)),A=p(a),B=p(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
-function applyTheme(bg,ac,save){
-  const n=parseInt(bg.slice(1),16),d=((n>>16)*299+((n>>8)&255)*587+(n&255)*114)/1000<128,w=d?'#ffffff':'#000000',tx=d?'#efe4d6':'#3a2f23',s=document.documentElement.style;
-  s.setProperty('--bg',bg);s.setProperty('--panel',mix(bg,w,.06));s.setProperty('--line',mix(bg,w,.16));s.setProperty('--text',tx);s.setProperty('--dim',mix(tx,bg,.4));s.setProperty('--acc',ac);s.setProperty('--on',bg);
-  if(save)ls.set('oge-theme',JSON.stringify([bg,ac]));
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Репетитор — Личный кабинет (Den & Kirill)</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --sidebar: #ffffff;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #8b5cf6;
+      --success: #16a34a;
+      --success-bg: rgba(22, 163, 74, 0.12);
+      --error: #dc2626;
+      --error-bg: rgba(220, 38, 38, 0.12);
+      --border: #e2e8f0;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="dark"] {
+      --bg: #0b0f19;
+      --sidebar: #111827;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --accent: #a78bfa;
+      --success: #4ade80;
+      --success-bg: rgba(74, 222, 128, 0.15);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.15);
+      --border: #334155;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 860px) {
+      body { grid-template-columns: 1fr; }
+    }
+    /* Sidebar */
+    aside {
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    @media (max-width: 860px) {
+      aside { height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .student-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .student-btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .student-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .nav-group-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-item {
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.94rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: 0.15s;
+    }
+    .nav-item:hover { background: var(--bg); border-color: var(--border); }
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    /* Main area */
+    main {
+      padding: 28px 32px 80px;
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    @media (max-width: 600px) {
+      main { padding: 16px; }
+    }
+    .top-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .stats-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      min-width: 240px;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 10px;
+      background: var(--bg);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .btn:hover { border-color: var(--primary); }
+    .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn.primary:hover { background: var(--primary-hover); }
+
+    /* Навигатор по номерам задач */
+    .pin-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .pin {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .pin.ok { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+    .pin.err { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+
+    /* Галерея сканов p1..p4.jpg */
+    .scans-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .scans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .scan-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg);
+      cursor: zoom-in;
+      transition: transform 0.15s;
+    }
+    .scan-item:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .scan-item img { width: 100%; display: block; }
+    .scan-caption { padding: 6px 10px; font-size: 0.82rem; color: var(--muted); text-align: center; }
+
+    /* Карточки заданий и теории */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      scroll-margin-top: 20px;
+    }
+    .card.correct { border-left: 5px solid var(--success); }
+    .card.wrong { border-left: 5px solid var(--error); }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .card-num { font-weight: 700; color: var(--primary); font-size: 1rem; }
+    .card-tag {
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .card-body { font-size: 1.02rem; line-height: 1.65; margin-bottom: 16px; }
+    .answer-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .answer-input {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+
+4, [25.10.26 16:00]
+color: var(--text);
+      font-size: 0.98rem;
+      width: 210px;
+    }
+    .badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .badge.ok { background: var(--success-bg); color: var(--success); }
+    .badge.err { background: var(--error-bg); color: var(--error); }
+    .solution {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: var(--bg);
+      border-left: 3px solid var(--accent);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .solution.open { display: block; }
+
+    /* Модальное окно для зума сканов */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 95vw;
+      max-height: 92vh;
+      border-radius: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<aside>
+  <div class="logo">
+    <span>🎓 Repet Hub</span>
+    <button class="btn" onclick="toggleTheme()" title="Переключить тему">🌗</button>
+  </div>
+
+  <div>
+    <div class="nav-group-title">Ученик</div>
+    <div class="student-switcher">
+      <button class="student-btn active" id="stu-den" onclick="selectStudent('den')">Денис (ОГЭ)</button>
+      <button class="student-btn" id="stu-kirill" onclick="selectStudent('kirill')">Кирилл</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="nav-group-title">Материалы и варианты</div>
+    <div class="nav-list" id="module-list"></div>
+  </div>
+
+  <div style="margin-top:auto; font-size:0.82rem; color:var(--muted);">
+    <div>⏱ Таймер ОГЭ: <strong id="timer-display">03:55:00</strong></div>
+    <div style="margin-top:6px; display:flex; gap:6px;">
+      <button class="btn" style="flex:1" onclick="toggleTimer()" id="timer-btn">Старт</button>
+      <button class="btn" onclick="resetTimer()">Сброс</button>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div class="top-bar">
+    <div>
+      <h1 id="page-title" style="font-size:1.35rem;">Загрузка...</h1>
+      <div id="page-subtitle" style="font-size:0.88rem; color:var(--muted);"></div>
+    </div>
+    <div class="stats-wrap" id="stats-panel">
+      <span id="score-label" style="font-weight:700;">0 / 0</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <button class="btn primary" onclick="checkAll()">Проверить всё</button>
+      <button class="btn" onclick="resetProgress()">Очистить</button>
+    </div>
+  </div>
+
+  <div class="pin-grid" id="pin-grid"></div>
+
+  <details class="scans-panel" id="scans-panel" style="display:none;" open>
+    <summary style="cursor:pointer; font-weight:700;">📄 Оригинальные бланки варианта (нажмите на лист для увеличения)</summary>
+    <div class="scans-grid" id="scans-grid"></div>
+  </details>
+
+  <div id="content-area"></div>
+</main>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('open')">
+  <img id="lightbox-img" src="" alt="Скан">
+</div>
+
+<script>
+/**
+ * Конфигурация модулей в точном соответствии с деревом файлов:
+ * data/den/{oge-266.json, oge-268.json, author-1.json, author-2.json, ref.json}
+ * data/kirill/{tasks.json, theory.json}
+ */
+const STRUCTURE = {
+  den: [
+    { id: "oge-266", title: "ОГЭ Вариант №266", file: "data/den/oge-266.json", scansFolder: "img/266", type: "tasks" },
+    { id: "oge-268", title: "ОГЭ Вариант №268", file: "data/den/oge-268.json", scansFolder: "img/268", type: "tasks" },
+    { id: "author-1", title: "Авторская работа №1", file: "data/den/author-1.json", type: "tasks" },
+    { id: "author-2", title: "Авторская работа №2", file: "data/den/author-2.json", type: "tasks" },
+    { id: "ref", title: "Справочные материалы", file: "data/den/ref.json", type: "theory" }
+  ],
+  kirill: [
+    { id: "tasks", title: "Банк заданий", file: "data/kirill/tasks.json", type: "tasks" },
+    { id: "theory", title: "Теория и формулы", file: "data/kirill/theory.json", type: "theory" }
+  ]
+};
+
+/**
+ * Встроенный резервный банк данных (если JSON-файл не загрузился по CORS или повреждён)
+ */
+const FALLBACK_DB = {
+  "oge-266": {
+    title: "Тренировочный вариант №266 ОГЭ 2027",
+    subtitle: "От 12.10.2026 • Шины + Алгебра и Геометрия (Части 1 и 2)",
+    tasks: [
+      { id: 2, topic: "Шины", text: "Сколько миллиметров составляет высота боковины шины, имеющей маркировку 275/70 R16?", answer: "192,5", solution: "$H = 275 \\cdot 0{,}70 = 192{,}5$ мм." },
+      { id: 3, topic: "Шины", text: "На сколько миллиметров увеличится диаметр колеса, если заменить колёса, установленные на заводе, колёсами с шинами маркировки 235/50 R18?", answer: "17,8", solution: "Диаметр колеса 235/50 R18: $d = 2 \\cdot 117{,}5 + 18 \\cdot 25{,}4 = 692{,}2$ мм." },
+      { id: 6, topic: "Дроби", text: "Найдите значение выражения $\\dfrac{14}{5} : \\dfrac{7}{2}$.", answer: "0,8", solution: "$\\dfrac{14}{5} \\cdot \\dfrac{2}{7} = \\dfrac{4}{5} = 0{,}8$." },
+      { id: 7, topic: "Координатная прямая", text: "На координатной прямой отмечены точки $A, B, C$ и $D$ между 4 и 6. Какая точка соответствует числу $\\dfrac{100}{19}$? 1) $A$, 2) $B$, 3) $C$, 4) $D$.", answer: "3", solution: "$\\dfrac{100}{19} = 5\\dfrac{5}{19} \\approx 5{,}26$ — точка $C$ (ответ 3)." },
+      { id: 8, topic: "Корни", text: "Найдите значение выражения $\\dfrac{\\sqrt{51}\\cdot\\sqrt{12}}{\\sqrt{17}}$.", answer: "6", solution: "$\\sqrt{3 \\cdot 12} = \\sqrt{36} = 6$." },
+      { id: 9, topic: "Квадратные уравнения", text: "Решите уравнение $x^2 - 12x + 20 = 0$. В ответ запишите больший из корней.", answer: "10", solution: "Корни $x_1 = 2, x_2 = 10$. Больший корень: $10$." },
+      { id: 10, topic: "Вероятность", text: "На тарелке 13 пирожков с мясом, 11 с капустой и 6 с вишней. Найдите вероятность того, что наугад взятый пирожок окажется с вишней.", answer: "0,2", solution: "$P = \\dfrac{6}{13+11+6} = \\dfrac{6}{30} = 0{,}2$." },
+      { id: 11, topic: "Графики", text: "Установите соответствие между функциями А) $y = -2x+4$, Б) $y = 2x-4$, В) $y = 2x+4$ и графиками 1, 2, 3.", answer: "321", solution: "А — 3, Б — 2, В — 1." },
+      { id: 12, topic: "Формулы", text: "Энергия конденсатора $W = \\dfrac{CU^2}{2}$. Найдите $W$, если $C = 10^{-4}$ Ф, $U = 12$ В.", answer: "0,0072", solution: "$W = \\dfrac{10^{-4} \\cdot 144}{2} = 0{,}0072$ Дж." },
+      { id: 13, topic: "Неравенства", text: "Укажите решение неравенства $-3 - x \\ge x - 6$: 1) $(-\\infty; 1{,}5]$, 2) $[1{,}5; +\\infty)$, 3) $(-\\infty; 4{,}5]$, 4) $[4{,}5; +\\infty)$.", answer: "1", solution: "$-2x \\ge -3 \\implies x \\le 1{,}5$ (ответ 1)." },
+      { id: 14, topic: "Прогрессии", text: "Вещество охлаждали: каждую минуту температура уменьшалась на $6^\\circ\\text{C}$. Найдите температуру через 4 минуты, если начальная была $-7^\\circ\\text{C}$.", answer: "-31", solution: "$-7 - 4 \\cdot 6 = -31^\\circ\\text{C}$." },
+      { id: 15, topic: "Треугольники", text: "$M$ и $N$ — середины сторон $AB$ и $BC$ треугольника $ABC$, $AB=21, BC=22, AC=28$. Найдите $MN$.", answer: "14", solution: "Средняя линия $MN = AC / 2 = 14$." },
+      { id: 16, topic: "Окружность", text: "$AC$ и $BD$ — диаметры окружности с центром $O$. $\\angle AOD = 50^\\circ$. Найдите вписанный угол $ACB$.", answer: "65", solution: "$\\angle ACB = (180^\\circ - 50^\\circ)/2 = 65^\\circ$." },
+      { id: 17, topic: "Трапеция", text: "Сумма двух углов равнобедренной трапеции равна $196^\\circ$. Найдите меньший угол.", answer: "82", solution: "$180^\\circ - 196^\\circ / 2 = 82^\\circ$." },
+      { id: 18, topic: "Клетчатая решётка", text: "На клетчатой бумаге $1\\times 1$ изображён треугольник (основание 6, высота 3). Найдите его площадь.", answer: "9", solution: "$S = \\dfrac{1}{2} \\cdot 6 \\cdot 3 = 9$." },
+      { id: 19, topic: "Утверждения", text: "Какие утверждения верны? 1) Площадь треугольника меньше произведения двух его сторон. 2) Средняя линия трапеции равна сумме оснований. 3) Если два угла одного треугольника равны двум углам другого, то они подобны.", answer: "13", solution: "Верны утверждения 1 и 3." },
+
+4, [25.10.26 16:00]
+{ id: 20, topic: "Часть 2 • Алгебра", text: "Решите систему уравнений $\\begin{cases} x^2 + y = 5, \\\\ 6x^2 - y = 2. \\end{cases}$", answer: "(-1;4);(1;4)", solution: "Складывая уравнения, получаем $7x^2 = 7 \\Rightarrow x = \\pm 1, y = 4$. Ответ: $(-1; 4); (1; 4)$." },
+      { id: 21, topic: "Часть 2 • Текстовая задача", text: "Баржа прошла по течению реки 32 км и обратно 24 км за 4 часа. Найдите собственную скорость баржи, если скорость течения 5 км/ч.", answer: "15", solution: "$\\dfrac{32}{v+5} + \\dfrac{24}{v-5} = 4 \\Rightarrow v^2 - 14v - 15 = 0 \\Rightarrow v = 15$ км/ч." },
+      { id: 22, topic: "Часть 2 • Графики", text: "Постройте график $y = \\dfrac{(x^2+0{,}25)(x-1)}{1-x}$. При каких $k$ прямая $y = kx$ имеет с графиком ровно одну общую точку?", answer: "-1,25;-1;1", solution: "$y = -x^2 - 0{,}25$ при $x \\ne 1$. Касание при $k = \\pm 1$, прохождение через выколотую точку $(1; -1{,}25)$ при $k = -1{,}25$." },
+      { id: 23, topic: "Часть 2 • Геометрия", text: "Точка $H$ — основание высоты из прямого угла $B$ треугольника $ABC$ к гипотенузе $AC$. Найдите $AB$, если $AH = 8, AC = 32$.", answer: "16", solution: "$AB = \\sqrt{AH \\cdot AC} = \\sqrt{8 \\cdot 32} = 16$." },
+      { id: 24, topic: "Часть 2 • Доказательство", text: "На средней линии трапеции $ABCD$ с основаниями $AD$ и $BC$ выбрали точку $F$. Докажите, что $S_{BFC} + S_{AFD} = \\frac{1}{2}S_{ABCD}$.", answer: "доказано", solution: "Высоты треугольников $BFC$ и $AFD$, опущенные из $F$, равны $h/2$. Сумма площадей равна $\\frac{1}{2}(BC+AD)\\cdot\\frac{h}{2} = \\frac{1}{2}S_{ABCD}$." },
+      { id: 25, topic: "Часть 2 • Геометрия", text: "Углы при основании трапеции равны $47^\\circ$ и $43^\\circ$, а отрезки, соединяющие середины противоположных сторон, равны 16 и 14. Найдите основания.", answer: "2;30", solution: "Так как $47^\\circ + 43^\\circ = 90^\\circ$, полусумма оснований равна 16, а полуразность равна 14. Основания: $16+14=30$ и $16-14=2$." }
+    ]
+  },
+  "oge-268": {
+    title: "Тренировочный вариант №268 ОГЭ 2027",
+    subtitle: "От 19.10.2026 • Участок + Алгебра и Геометрия (Части 1 и 2)",
+    tasks: [
+      { id: 1, topic: "Участок", text: "Определите цифры для объектов: яблони, теплица, сарай, жилой дом.", answer: "3147", solution: "Яблони — 3, теплица — 1, сарай — 4, жилой дом — 7." },
+      { id: 2, topic: "Участок", text: "Плитки для дорожек продаются в упаковках по 8 штук. Сколько упаковок понадобилось для дорожек и площадки?", answer: "9", solution: "Площадка $40$ плиток + дорожки $26$ плиток = $66$ плиток. $66 : 8 = 8{,}25 \\Rightarrow 9$ упаковок." },
+      { id: 3, topic: "Участок", text: "Найдите расстояние от жилого дома до гаража (между ближайшими точками по прямой) в метрах.", answer: "10", solution: "Катеты 3 клетки (6 м) и 4 клетки (8 м). Расстояние $\\sqrt{6^2+8^2} = 10$ м." },
+      { id: 4, topic: "Участок", text: "Сколько процентов от площади всего огорода занимает теплица?", answer: "20", solution: "Теплица 6 клеток из 30 клеток огорода: $6 / 30 = 20\\%$." },
+      { id: 5, topic: "Участок", text: "Через сколько часов непрерывной работы отопления экономия от использования газа компенсирует разницу в стоимости оборудования?", answer: "600", solution: "Разница оборудования $31896 - 24000 = 7896$ руб. Экономия в час: $20{,}68 - 7{,}52 = 13{,}16$ руб/ч. Время: $7896 : 13{,}16 = 600$ ч." },
+      { id: 6, topic: "Дроби", text: "Найдите значение выражения $3{,}2 \\cdot 6{,}2$.", answer: "19,84", solution: "$3{,}2 \\cdot 6{,}2 = 19{,}84$." },
+      { id: 7, topic: "Координатная прямая", text: "На координатной прямой отмечено число $a \\in (7; 8)$. Какое утверждение верно? 1) $a-6<0$, 2) $a-7>0$, 3) $6-a>0$, 4) $8-a<0$.", answer: "2", solution: "Так как $a > 7$, верно $a - 7 > 0$ (ответ 2)." },
+      { id: 8, topic: "Степени", text: "Найдите значение выражения $\\dfrac{(2^9)^{-3}}{2^{-29}}$.", answer: "4", solution: "$2^{-27} : 2^{-29} = 2^2 = 4$." },
+      { id: 9, topic: "Уравнения", text: "Решите уравнение $3(x+6) - 2(x-6) = 6$.", answer: "-24", solution: "$x + 30 = 6 \\Rightarrow x = -24$." },
+      { id: 10, topic: "Вероятность", text: "По диаграмме Эйлера найдите вероятность события $\\overline{A \\cup B}$.", answer: "0,15", solution: "$0{,}05 + 0{,}1 = 0{,}15$." },
+      { id: 11, topic: "Графики", text: "Установите соответствие между знаками коэффициентов $y = ax^2+bx+c$: А) $a<0, c>0$, Б) $a>0, c>0$, В) $a>0, c<0$ и графиками 1, 2, 3.", answer: "213", solution: "А — 2, Б — 1, В — 3." },
+      { id: 12, topic: "Формулы", text: "Сила Архимеда $F = \\rho g V$, где $\\rho = 1000, g = 9{,}8, V = 0{,}05$. Найдите $F$.", answer: "490", solution: "$1000 \\cdot 9{,}8 \\cdot 0{,}05 = 490$ Н." },
+      { id: 13, topic: "Неравенства", text: "Укажите решение неравенства $8x - x^2 < 0$.", answer: "2", solution: "$(-\\infty; 0) \\cup (8; +\\infty)$ — под номером 2." },
+      { id: 14, topic: "Прогрессии", text: "Мячик подпрыгнул на 5,4 м, а при каждом следующем прыжке — в 3 раза меньше. При каком по счёту прыжке высота впервые меньше 10 см?", answer: "5", solution: "$540 \\to 180 \\to 60 \\to 20 \\to 6{,}67$ см (5-й прыжок)." },
+      { id: 15, topic: "Треугольники", text: "В треугольнике $ABC$ угол $C$ равен $177^\\circ$. Найдите внешний угол при вершине $C$.", answer: "3", solution: "$180^\\circ - 177^\\circ = 3^\\circ$." },
+      { id: 16, topic: "Квадрат", text: "Радиус вписанной в квадрат окружности равен $14\\sqrt{2}$. Найдите диагональ квадрата.", answer: "56", solution: "$d = 2r\\sqrt{2} = 28\\sqrt{2}\\cdot\\sqrt{2} = 56$." },
+      { id: 17, topic: "Параллелограмм", text: "Диагональ $AC$ параллелограмма $ABCD$ образует со сторонами углы $25^\\circ$ и $30^\\circ$. Найдите больший угол.", answer: "125", solution: "$180^\\circ - (25^\\circ + 30^\\circ) = 125^\\circ$." },
+      { id: 18, topic: "Клетчатая решётка", text: "На клетчатой бумаге изображена трапеция (основания 2 и 8). Найдите её среднюю линию.", answer: "5", solution: "$(2 + 8) / 2 = 5$." },
+      { id: 19, topic: "Утверждения", text: "Какое утверждение верно? 1) Все хорды одной окружности равны. 2) Диагональ равнобедренной трапеции делит её на два равных треугольника. 3) Сумма углов равнобедренного треугольника равна $180^\\circ$.", answer: "3", solution: "Верно утверждение 3." },
+      { id: 20, topic: "Часть 2 • Неравенство", text: "Решите неравенство $\\dfrac{-13}{(x-4)^2 - 6} \\ge 0$.", answer: "(4-√6;4+√6)", solution: "$(x-4)^2 - 6 < 0 \\Rightarrow x \\in (4 - \\sqrt{6}; 4 + \\sqrt{6})$." },
+      { id: 21, topic: "Часть 2 • Текстовая задача", text: "Первый рабочий за час делает на 5 деталей больше второго и выполняет заказ из 180 деталей на 3 часа быстрее. Сколько деталей в час делает первый рабочий?", answer: "20", solution: "$\\dfrac{180}{x-5} - \\dfrac{180}{x} = 3 \\Rightarrow x = 20$." },
+      { id: 22, topic: "Часть 2 • Графики", text: "Постройте график $y = 5 - \\dfrac{x+5}{x^2+5x}$. При каких $m$ прямая $y = m$ не имеет с графиком общих точек?", answer: "5;5,2", solution: "$y = 5 - 1/x$ при $x \\ne -5$. Горизонтальная асимптота $m = 5$, выколотая точка при $x = -5$ даёт $m = 5{,}2$." },
+      { id: 23, topic: "Часть 2 • Геометрия", text: "Высота $AH$ ромба $ABCD$ делит сторону $CD$ на отрезки $DH = 21$ и $CH = 8$. Найдите высоту ромба.", answer: "20", solution: "$AD = 21 + 8 = 29$. $AH = \\sqrt{29^2 - 21^2} = 20$." },
+      { id: 24, topic: "Часть 2 • Доказательство", text: "Внутренняя общая касательная к двум окружностям с центрами $P$ и $Q$ делит отрезок $PQ$ в отношении $a:b$. Докажите, что диаметры относятся как $a:b$.", answer: "доказано", solution: "Прямоугольные треугольники, образованные радиусами в точки касания и отрезками линии центров, подобны по острому углу." },
+      { id: 25, topic: "Часть 2 • Геометрия", text: "Точки $M$ и $N$ лежат на стороне $AC$ треугольника $ABC$ на расстояниях 9 и 11 от $A$. Найдите радиус окружности, проходящей через $M, N$ и касающейся луча $AB$, если $\\cos\\angle BAC = \\dfrac{\\sqrt{11}}{6}$.", answer: "5,4", solution: "$AK^2 = 9 \\cdot 11 = 99$. По теореме косинусов $KM = 9$, откуда $\\triangle AKM$ равнобедренный и $R = \\dfrac{KM}{2\\sin\\angle KNM} = \\dfrac{9}{2 \\cdot 5/6} = 5{,}4$." }
+
+4, [25.10.26 16:00]
+]
+  },
+  "ref": {
+    title: "Справочные материалы ОГЭ по математике",
+    subtitle: "Официальные формулы алгебры и геометрии",
+    items: [
+      { title: "Квадратное уравнение и теорема Виета", body: "Корни уравнения $ax^2 + bx + c = 0$: $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$ Приведённое уравнение $x^2 + px + q = 0$: $x_1 + x_2 = -p$, $x_1 x_2 = q$." },
+      { title: "Арифметическая и геометрическая прогрессии", body: "Арифметическая: $a_n = a_1 + d(n-1)$, $S_n = \\dfrac{a_1 + a_n}{2}\\cdot n$.<br>Геометрическая: $b_n = b_1 \\cdot q^{n-1}$, $S_n = \\dfrac{b_1(q^n - 1)}{q - 1}$." },
+      { title: "Геометрия: треугольник, ромб, трапеция", body: "Площадь треугольника: $S = \\dfrac{1}{2}ah = \\dfrac{1}{2}ab\\sin\\gamma$.<br>Площадь трапеции: $S = \\dfrac{a+b}{2}\\cdot h$.<br>Теорема синусов: $\\dfrac{a}{\\sin A} = \\dfrac{b}{\\sin B} = 2R$.<br>Теорема косинусов: $c^2 = a^2 + b^2 - 2ab\\cos\\gamma$." }
+    ]
+  }
+};
+
+let currentStudent = "den";
+let currentModule = null;
+let activeTasks = [];
+
+function selectStudent(stu) {
+  currentStudent = stu;
+  document.getElementById("stu-den").classList.toggle("active", stu === "den");
+  document.getElementById("stu-kirill").classList.toggle("active", stu === "kirill");
+
+  const list = document.getElementById("module-list");
+  const mods = STRUCTURE[stu];
+  list.innerHTML = mods.map(m => `
+    <button class="nav-item" id="nav-${m.id}" onclick="loadModule('${m.id}')">
+      <span>${m.title}</span>
+    </button>
+  `).join("");
+
+  loadModule(mods[0].id);
 }
-(()=>{let t;try{t=JSON.parse(ls.get('oge-theme'))}catch(e){}
-  if(!t){const m=matchMedia('(prefers-color-scheme: dark)').matches;t=m?[TH[0][1],TH[0][2]]:[TH[1][1],TH[1][2]]}
-  applyTheme(t[0],t[1],false);
-  const bg=h('input',{type:'color',value:t[0]}),ac=h('input',{type:'color',value:t[1]});
-  const upd=()=>applyTheme(bg.value,ac.value,true);bg.oninput=ac.oninput=upd;
-  $('#thp').append(h('b',{textContent:'Оформление'}),h('div',{className:'th'},TH.map(([n,b,a])=>h('button',{textContent:n,style:`background:${b};color:${mix(b,parseInt(b.slice(1),16)>0x888888?'#000000':'#ffffff',.85)};border-color:${a}`,onclick:()=>{bg.value=b;ac.value=a;upd()}}))),
-    h('div',{className:'row'},h('label',{className:'dim'},'Фон ',bg),h('label',{className:'dim'},'Акцент ',ac)));
-  $('#thb').onclick=()=>$('#thp').hidden=!$('#thp').hidden})();
-/* ---- проверка ответа ---- */
-const norm=s=>String(s).toLowerCase().replace(/[−–—]/g,'-').replace(/[\s()]/g,'').replace(/,/g,'.').replace(/\.$/,'').split(';').sort().join(';');
-function prog(key,list,box){const d=list.filter(t=>ls.get(key+':'+t.n)==='1').length;
-  box.replaceChildren(h('span',{className:'dim',textContent:`Решено с проверкой: ${d} из ${list.length}`}),h('div',{className:'bar'},h('i',{style:`width:${list.length?100*d/list.length:0}%`})))}
-function task(key,t,refresh){
-  const c=h('div',{className:'card'+(ls.get(key+':'+t.n)==='1'?' done':'')});
-  c.append(h('b',{},t.n?t.n+'. ':''),t.text||(t.ans||t.sol?'':''));
-  if(t.img)c.append(h('img',{src:t.img,className:'tk'}));
-  const row=h('div',{className:'row'}),msg=h('div',{className:'msg'}),sol=h('div',{className:'sol',hidden:true,textContent:t.sol||'Решение пока не добавлено.'});
-  if(t.ans){const inp=h('input',{placeholder:'Ваш ответ',inputMode:'text'}),go=h('button',{className:'p',textContent:'Проверить'});
-    const chk=()=>{if(!inp.value.trim())return;
-      if(t.ans.some(a=>norm(a)===norm(inp.value))){msg.className='msg ok';msg.textContent='Верно!';ls.set(key+':'+t.n,'1');c.classList.add('done');refresh()}
-      else{msg.className='msg bad';msg.textContent='Неверно. Попробуйте ещё раз.';inp.select()}};
-    go.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};row.append(inp,go)}
-  if(t.sol||t.ans)row.append(h('button',{textContent:'Решение',onclick:()=>{sol.hidden=!sol.hidden}}));
-  c.append(row,msg,sol);return c}
-/* ---- экраны ---- */
-function material(p,m,d){
-  const key='oge:'+p+':'+m,all=d.sections.flatMap(s=>s.tasks),chk=all.filter(t=>t.ans),box=h('div'),v=h('div');
-  const refresh=()=>prog(key,chk,box);v.append(h('h1',{textContent:d.title}));
-  if(d.kind==='tasks'&&chk.length){v.append(box);refresh()}
-  if(d.pages)v.append(h('details',{className:'card pg'},h('summary',{textContent:'КИМ: страницы варианта'}),d.pages.map(src=>{const i=h('img',{src,loading:'lazy'});i.onerror=()=>i.replaceWith(h('p',{className:'dim',textContent:'Нет файла '+src}));return i})));
-  d.sections.forEach(s=>{v.append(h('h2',{textContent:s.t}));
-    if(d.kind==='tasks')s.tasks.forEach(t=>v.append(task(key,t,refresh)));
-    else v.append(h('div',{className:'card'},h('ul',{},s.l.map(x=>h('li',{textContent:x})))))});
-  return v}
-async function route(){
-  const [p,m]=location.hash.slice(1).split('/'),v=$('#view');$('#back').hidden=!p;
-  try{
-    if(!p){$('#ttl').textContent='Подготовка к ОГЭ';const d=await get('index');
-      v.replaceChildren(h('h1',{textContent:'Кто занимается?'}),...d.people.map(x=>h('a',{className:'card',href:'#'+x.id,textContent:x.t})))}
-    else if(!m){if(!ID.test(p))throw 0;const d=await get(p+'/index');$('#ttl').textContent=d.title;
-      v.replaceChildren(...d.items.map(x=>h('a',{className:'card',href:'#'+p+'/'+x.id},h('b',{textContent:x.t}),h('div',{className:'dim',textContent:x.sub||''}))))}
-    else{if(!ID.test(p)||!ID.test(m))throw 0;const d=await get(p+'/'+m);$('#ttl').textContent='';v.replaceChildren(material(p,m,d));scrollTo(0,0)}
-  }catch(e){v.replaceChildren(h('p',{textContent:'Не удалось открыть страницу.'}))}}
-$('#back').onclick=()=>{const a=location.hash.slice(1).split('/');location.hash=a.length>1?'#'+a[0]:''};
-addEventListener('hashchange',route);route();
-</script></body></html>
+
+async function loadModule(modId) {
+  const mods = STRUCTURE[currentStudent];
+  const mod = mods.find(m => m.id === modId);
+  currentModule = mod;
+
+  mods.forEach(m => {
+    const el = document.getElementById(`nav-${m.id}`);
+    if (el) el.classList.toggle("active", m.id === modId);
+  });
+
+  // Попытка загрузить реальный JSON из папки data/...
+  let payload = null;
+  try {
+    const res = await fetch(mod.file);
+    if (res.ok) payload = await res.json();
+  } catch (e) {
+    // Используем встроенный резервный набор, если открыто без веб-сервера
+  }
+  if (!payload) {
+    payload = FALLBACK_DB[mod.id] || {
+      title: mod.title,
+      subtitle: `Файл ${mod.file}`,
+      tasks: [],
+      items: []
+    };
+  }
+
+  renderScans(mod.scansFolder);
+  renderPayload(payload, mod);
+}
+
+function renderScans(folder) {
+  const panel = document.getElementById("scans-panel");
+  const grid = document.getElementById("scans-grid");
+  if (!folder) {
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "block";
+  grid.innerHTML = [1, 2, 3, 4].map(n => `
+    <div class="scan-item" onclick="openLightbox('${folder}/p${n}.jpg')">
+      <img src="${folder}/p${n}.jpg" alt="Лист ${n}" loading="lazy">
+      <div class="scan-caption">${folder}/p${n}.jpg</div>
+    </div>
+  `).join("");
+}
+
+function openLightbox(src) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox").classList.add("open");
+}
+
+function normalizeTasks(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw && Array.isArray(raw.tasks)) return raw.tasks;
+  if (raw && Array.isArray(raw.questions)) return raw.questions;
+  if (raw && Array.isArray(raw.items)) return raw.items;
+  return [];
+}
+
+function renderPayload(data, mod) {
+  document.getElementById("page-title").textContent = data.title || mod.title;
+  document.getElementById("page-subtitle").textContent = data.subtitle || mod.file;
+
+  const content = document.getElementById("content-area");
+  const pinGrid = document.getElementById("pin-grid");
+  const statsPanel = document.getElementById("stats-panel");
+
+  if (mod.type === "theory" || (data.items && !data.tasks)) {
+    statsPanel.style.display = "none";
+    pinGrid.innerHTML = "";
+    const items = data.items || data.sections || normalizeTasks(data);
+    content.innerHTML = items.map(item => `
+      <div class="card">
+        <div class="card-head">
+          <span class="card-num">${item.title || item.topic || "Раздел"}</span>
+        </div>
+        <div class="card-body">${item.body || item.text || item.content || ""}</div>
+      </div>
+    `).join("");
+    if (window.MathJax) MathJax.typesetPromise();
+    return;
+  }
+
+  statsPanel.style.display = "flex";
+  activeTasks = normalizeTasks(data);
+
+  pinGrid.innerHTML = activeTasks.map((t, idx) => {
+    const num = t.id || t.num || (idx + 1);
+    return `<a href="#task-${num}" class="pin" id="pin-${num}">${num}</a>`;
+  }).join("");
+
+  content.innerHTML = activeTasks.map((t, idx) => {
+    const num = t.id || t.num || (idx + 1);
+    const key = `repet_${currentStudent}_${mod.id}_${num}`;
+    const saved = localStorage.getItem(key) || "";
+    const topic = t.topic || t.category || (num >= 20 ? "Часть 2" : "Часть 1");
+    const questionText = t.text || t.question || t.prompt || "";
+    const solText = t.solution || t.explanation || "";
+    const ansText = t.answer ?? "";
+
+    return `
+      <div class="card" id="task-${num}">
+        <div class="card-head">
+          <span class="card-num">Задание №${num}</span>
+          <span class="card-tag">${topic}</span>
+        </div>
+        <div class="card-body">${questionText}</div>
+        <div class="answer-bar">
+          <input class="answer-input" type="text" id="inp-${num}" value="${saved}" placeholder="Введите ответ..." oninput="saveAns('${num}', this.value)">
+          <button class="btn primary" onclick="checkTask('${num}')">Проверить</button>
+          <button class="btn" onclick="toggleSol('${num}')">Решение</button>
+          <span id="badge-${num}"></span>
+        </div>
+        <div class="solution" id="sol-${num}">
+          <div><strong>Решение:</strong> ${solText || "См. разбор с преподавателем."}</div>
+          ${ansText !== "" ? `<div style="margin-top:6px;"><strong>Ответ:</strong> ${ansText}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  updateStats();
+  if (window.MathJax) MathJax.typesetPromise();
+}
+
+function norm(val) {
+  return String(val || "").trim().replace(/\s+/g, "").replace(/\./g, ",").toLowerCase();
+}
+
+function saveAns(num, val) {
+  const key = `repet_${currentStudent}_${currentModule.id}_${num}`;
+  localStorage.setItem(key, val.trim());
+}
+
+function checkTask(num) {
+  const t = activeTasks.find((x, i) => String(x.id || x.num || (i + 1)) === String(num));
+  if (!t) return;
+  const inp = document.getElementById(`inp-${num}`);
+  const card = document.getElementById(`task-${num}`);
+  const badge = document.getElementById(`badge-${num}`);
+  const pin = document.getElementById(`pin-${num}`);
+
+  const userVal = norm(inp.value);
+  const rightVals = String(t.answer || "").split("|").map(norm);
+  const ok = userVal !== "" && rightVals.includes(userVal);
+
+  card.classList.remove("correct", "wrong");
+  card.classList.add(ok ? "correct" : "wrong");
+
+  if (pin) {
+    pin.classList.remove("ok", "err");
+    pin.classList.add(ok ? "ok" : "err");
+  }
+
+  badge.className = "badge " + (ok ? "ok" : "err");
+  badge.textContent = ok ? "✓ Верно" : "✗ Ошибка";
+  updateStats();
+}
+
+function checkAll() {
+  activeTasks.forEach((t, i) => checkTask(t.id || t.num || (i + 1)));
+}
+
+function updateStats() {
+  let okCount = 0;
+  activeTasks.forEach((t, i) => {
+    const num = t.id || t.num || (i + 1);
+    const val = norm(document.getElementById(`inp-${num}`)?.value);
+    const rightVals = String(t.answer || "").split("|").map(norm);
+    if (val !== "" && rightVals.includes(val)) okCount++;
+  });
+  const total = activeTasks.length;
+  document.getElementById("score-label").textContent = `${okCount} / ${total}`;
+  document.getElementById("progress-fill").style.width = total ? `${(okCount / total) * 100}%` : "0%";
+}
+
+function toggleSol(num) {
+  document.getElementById(`sol-${num}`)?.classList.toggle("open");
+}
+
+function resetProgress() {
+  activeTasks.forEach((t, i) => {
+    const num = t.id || t.num || (i + 1);
+    localStorage.removeItem(`repet_${currentStudent}_${currentModule.id}_${num}`);
+  });
+  loadModule(currentModule.id);
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  root.setAttribute("data-theme", root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+}
+
+4, [25.10.26 16:00]
+/* Таймер ОГЭ (235 минут = 3 ч 55 мин) */
+let timerSec = 235 * 60;
+let timerInt = null;
+function renderTimer() {
+  const h = String(Math.floor(timerSec / 3600)).padStart(2, "0");
+  const m = String(Math.floor((timerSec % 3600) / 60)).padStart(2, "0");
+  const s = String(timerSec % 60).padStart(2, "0");
+  document.getElementById("timer-display").textContent = `${h}:${m}:${s}`;
+}
+function toggleTimer() {
+  const btn = document.getElementById("timer-btn");
+  if (timerInt) {
+    clearInterval(timerInt);
+    timerInt = null;
+    btn.textContent = "Старт";
+  } else {
+    timerInt = setInterval(() => {
+      if (timerSec > 0) { timerSec--; renderTimer(); }
+    }, 1000);
+    btn.textContent = "Пауза";
+  }
+}
+function resetTimer() {
+  clearInterval(timerInt);
+  timerInt = null;
+  timerSec = 235 * 60;
+  document.getElementById("timer-btn").textContent = "Старт";
+  renderTimer();
+}
+
+selectStudent("den");
+</script>
+</body>
+</html>
