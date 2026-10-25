@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Материалы</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:#f2e6d6;--panel:#f8f0e4;--line:#dccdb4;--text:#3a2f23;--dim:#6a5b48;--acc:#8a5a2b}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1714;--panel:#251e19;--line:#3b3027;--text:#efe4d6;--dim:#ab9a86;--acc:#cdb083}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Manrope,system-ui,sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+main{max-width:720px;margin:0 auto}
+h1{font-size:22px;margin:8px 0 14px}h2{font-size:18px;margin:18px 0 8px;color:var(--acc)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+input,button{font:inherit;color:inherit;border-radius:10px;border:1px solid var(--line);background:var(--panel);padding:10px 12px}
+input{width:100%;margin:6px 0}
+button{cursor:pointer;font-weight:700}button.p{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}nav button.on{background:var(--acc);color:var(--bg)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.ex{display:none;white-space:pre-line;margin-top:8px;padding:10px;border-left:3px solid var(--acc);color:var(--dim)}.ex.show{display:block}
+.err{color:#c0392b;min-height:1.4em}li{margin:4px 0}
+</style></head><body><main>
+<section id="login"><h1>Материалы для занятий</h1><div class="card">
+<input id="u" placeholder="Логин" autocapitalize="off" autocomplete="username">
+<input id="p" type="password" placeholder="Пароль" autocomplete="current-password">
+<div class="err" id="e"></div><button class="p" id="go">Войти</button></div></section>
+<section id="app" hidden><div class="top"><h1 id="who"></h1><button id="out">Выйти</button></div><nav id="nav"></nav><div id="view"></div></section>
+</main><script>
+const $=s=>document.querySelector(s),b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const h=(t,a={},...k)=>{const e=document.createElement(t);Object.assign(e,a);k.flat().forEach(x=>e.append(x));return e};
+async function dec(u,p){
+  if(!/^[a-z0-9_-]+$/.test(u))throw 0;
+  const r=await fetch('data/'+u+'.enc.json');if(!r.ok)throw 0;const j=await r.json();
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveKey']);
+  const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(j.s),iterations:200000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(j.i)},k,b64(j.c))));
+}
+let D;
+const tabs={
+  variants:()=>{const v=h('div');D.variants.forEach(x=>{
+    const c=h('div',{className:'card'},h('b',{},x.title));
+    x.tasks.forEach(t=>{const ex=h('div',{className:'ex',textContent:t.expl});
+      const b=h('button',{textContent:'Показать разбор',onclick:()=>{ex.classList.toggle('show');b.textContent=ex.classList.contains('show')?'Скрыть разбор':'Показать разбор'}});
+      c.append(h('div',{style:'margin-top:12px'},h('b',{},t.n+'. '),t.text,h('div',{style:'margin-top:6px'},b),ex))});
+    v.append(c)});return v.children.length?v:h('p',{textContent:'Вариантов пока нет.'})},
+  ref:()=>{const v=h('div');D.ref.forEach(s=>v.append(h('div',{className:'card'},h('b',{},s.t),h('ul',{},s.l.map(x=>h('li',{textContent:x}))))));return v},
+  answers:()=>{const v=h('div');Object.entries(D.answers).forEach(([n,vs])=>Object.entries(vs).forEach(([t,a])=>
+    v.append(h('div',{className:'card'},h('b',{},n+': '+t),h('ol',{},a.map(x=>h('li',{textContent:x})))))));return v}
+};
+const names={variants:'Варианты',ref:'Справочник',answers:'Ответы'};
+function show(k){$('#view').replaceChildren(tabs[k]());[...$('#nav').children].forEach(b=>b.classList.toggle('on',b.dataset.k===k))}
+$('#go').onclick=async()=>{
+  $('#e').textContent='';
+  try{D=await dec($('#u').value.trim().toLowerCase(),$('#p').value)}catch(e){$('#e').textContent='Неверный логин или пароль';return}
+  $('#login').hidden=true;$('#app').hidden=false;$('#who').textContent=D.title;
+  const ks=['variants','ref'].concat(D.answers?['answers']:[]);
+  $('#nav').replaceChildren(...ks.map(k=>h('button',{textContent:names[k],onclick:()=>show(k)},)));
+  [...$('#nav').children].forEach((b,i)=>b.dataset.k=ks[i]);show(ks[0]);
+};
+$('#p').onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
+$('#out').onclick=()=>{D=null;$('#app').hidden=true;$('#login').hidden=false;$('#p').value=''};
+</script></body></html>
