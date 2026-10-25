@@ -10,7 +10,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Manrope,syst
 main{max-width:1400px;margin:0 auto}
 h1{font-size:21px;margin:6px 0}h2{font-size:17px;margin:18px 0 6px;color:var(--acc)}
 .top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}.g{display:flex;gap:8px}
-.wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.wrap{display:block}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
 .card.done{border-color:var(--ok)}a.card{display:block;color:inherit;text-decoration:none}
 .dim{color:var(--dim);font-size:14px}
@@ -23,24 +23,27 @@ img.tk,.pg img{max-width:100%;border-radius:10px;border:1px solid var(--line);ma
 .bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 2px}.bar i{display:block;height:100%;background:var(--acc);width:0}
 .th{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.th button{padding:6px 10px;font-size:13px}
 summary{cursor:pointer;font-weight:700}
-#board{position:sticky;top:14px;height:calc(100vh - 28px);height:calc(100dvh - 28px);display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px}
+#board{position:fixed;z-index:20;display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;min-width:300px;min-height:260px;box-shadow:0 8px 30px #0006}
+#board.off{display:none}
+#bh{display:flex;justify-content:space-between;align-items:center;cursor:move;font-weight:700;user-select:none;touch-action:none}
+#bh button{padding:4px 10px;font-size:13px}
 #board .tb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#board .tb button{padding:6px 10px;font-size:14px}
 #bw{width:80px;padding:0}.sw{width:28px;height:28px;padding:0;border-radius:50%}
 #cvw{flex:1;overflow:auto;border-radius:10px;border:1px dashed var(--line)}
 #cv{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
-#bcl,#bdb{display:none}
-@media(max-width:999px){.wrap{grid-template-columns:1fr}
- #board{display:none;position:fixed;inset:0;z-index:20;height:auto;border-radius:0;top:0;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
- #board.open{display:flex}#bcl,#bdb{display:inline-block}}
+.rz{position:absolute;bottom:0;width:20px;height:20px;touch-action:none}
+#rzr{right:0;cursor:nwse-resize;border-right:3px solid var(--acc);border-bottom:3px solid var(--acc);border-radius:0 0 12px 0}
+#rzl{left:0;cursor:nesw-resize;border-left:3px solid var(--acc);border-bottom:3px solid var(--acc);border-radius:0 0 0 12px}
+@media(max-width:999px){#board{display:none;left:0!important;top:0!important;width:100%!important;height:100%!important;border-radius:0;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}#board.open{display:flex}#bh{cursor:default}.rz{display:none}}
 </style></head><body><main>
 <div class="top"><button id="back" hidden>← Назад</button><b id="ttl"></b><span class="g"><button id="bdb">Доска</button><button id="thb">Темы</button></span></div>
 <div id="thp" class="card" hidden></div>
 <div class="wrap"><div id="view"></div>
-<aside id="board"><div class="tb">
+<aside id="board"><div id="rzl" class="rz"></div><div id="bh"><span>Доска</span><button id="bcl">Скрыть</button></div><div class="tb">
 <button id="tp" class="on">Ручка</button><button id="te">Ластик</button>
 <button class="sw" data-c="auto" title="Основной" style="background:var(--text)"></button><button class="sw" data-c="#e5534b" style="background:#e5534b"></button><button class="sw" data-c="#4f8cff" style="background:#4f8cff"></button>
-<input id="bw" type="range" min="1" max="10" value="3"><button id="tc">Очистить</button><button id="bcl">Закрыть</button></div>
-<div id="cvw"><canvas id="cv" width="1000" height="1400"></canvas></div></aside></div>
+<input id="bw" type="range" min="1" max="10" value="3"><button id="tu" title="Ctrl+Z">Отменить</button><button id="tc">Очистить</button></div>
+<div id="cvw"><canvas id="cv" width="1000" height="1400"></canvas></div><div id="rzr" class="rz"></div></aside></div>
 </main><script>
 const $=s=>document.querySelector(s);
 const h=(t,a={},...k)=>{const e=document.createElement(t);Object.assign(e,a);k.flat().forEach(x=>e.append(x));return e};
@@ -65,22 +68,48 @@ function applyTheme(bg,ac,save){
     h('div',{className:'row'},h('label',{className:'dim'},'Фон ',bg),h('label',{className:'dim'},'Акцент ',ac)));
   $('#thb').onclick=()=>$('#thp').hidden=!$('#thp').hidden})();
 /* ---- доска ---- */
-const cv=$('#cv'),cx=cv.getContext('2d');let tool='pen',col='auto',bkey=null,drawing=false,last;
-const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
-function stroke(a,b){const k=cv.width/(cv.getBoundingClientRect().width||cv.width);
-  cx.globalCompositeOperation=tool==='er'?'destination-out':'source-over';
-  cx.strokeStyle=col==='auto'?getComputedStyle(document.documentElement).getPropertyValue('--text').trim():col;
-  cx.lineWidth=$('#bw').value*k*(tool==='er'?4:1);cx.lineCap='round';cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(b[0],b[1]);cx.stroke()}
-const saveBoard=()=>{if(bkey)ls.set(bkey,cv.toDataURL())};
-function loadBoard(k){bkey='oge-board:'+k;cx.clearRect(0,0,cv.width,cv.height);const d=ls.get(bkey);if(d){const i=new Image();i.onload=()=>{cx.globalCompositeOperation='source-over';cx.drawImage(i,0,0)};i.src=d}}
-cv.onpointerdown=e=>{drawing=true;cv.setPointerCapture(e.pointerId);last=pt(e);stroke(last,last);e.preventDefault()};
-cv.onpointermove=e=>{if(!drawing)return;const p=pt(e);stroke(last,p);last=p};
-cv.onpointerup=cv.onpointercancel=()=>{if(drawing){drawing=false;saveBoard()}};
+const B=$('#board'),cv=$('#cv'),cx=cv.getContext('2d'),wide=()=>innerWidth>=1000;
+let tool='pen',col='auto',bkey=null,strokes=[],redo=[],cur=null,last;
+const pt=e=>{const r=cv.getBoundingClientRect();return[Math.round((e.clientX-r.left)*cv.width/r.width),Math.round((e.clientY-r.top)*cv.height/r.height)]};
+const inkOf=c=>c==='auto'?getComputedStyle(document.documentElement).getPropertyValue('--text').trim():c;
+function seg(s,a,b){cx.globalCompositeOperation=s.t==='er'?'destination-out':'source-over';cx.strokeStyle=inkOf(s.c);cx.lineWidth=s.w;cx.lineCap=cx.lineJoin='round';cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(b[0],b[1]);cx.stroke()}
+function paint(){cx.clearRect(0,0,cv.width,cv.height);strokes.forEach(s=>{const p=s.p;if(p.length<2)return;let a=[p[0],p[1]];seg(s,a,a);for(let i=2;i<p.length;i+=2){const b=[p[i],p[i+1]];seg(s,a,b);a=b}})}
+const keep=()=>{if(bkey){if(strokes.length)ls.set(bkey,JSON.stringify(strokes));else ls.del(bkey)}};
+function loadBoard(k){bkey='oge-strokes:'+k;redo=[];try{strokes=JSON.parse(ls.get(bkey))||[]}catch(e){strokes=[]}paint()}
+cv.onpointerdown=e=>{if(document.activeElement)document.activeElement.blur();e.preventDefault();cv.setPointerCapture(e.pointerId);
+  const k=cv.width/(cv.getBoundingClientRect().width||cv.width);last=pt(e);
+  cur={t:tool,c:col,w:+$('#bw').value*k*(tool==='er'?4:1),p:[last[0],last[1]]};strokes.push(cur);redo=[];seg(cur,last,last)};
+cv.onpointermove=e=>{if(!cur)return;const p=pt(e);cur.p.push(p[0],p[1]);seg(cur,last,p);last=p};
+cv.onpointerup=cv.onpointercancel=()=>{if(cur){cur=null;keep()}};
+const undo=()=>{if(strokes.length){redo.push(strokes.pop());paint();keep()}};
+const redoF=()=>{if(redo.length){strokes.push(redo.pop());paint();keep()}};
+$('#tu').onclick=undo;
+$('#tc').onclick=()=>{redo=[...strokes].reverse();strokes=[];paint();keep()};
+addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const z=e.code==='KeyZ',y=e.code==='KeyY',a=document.activeElement;
+  if(a&&a.tagName==='INPUT'&&a.type==='text')return;
+  if(z&&!e.shiftKey){e.preventDefault();undo()}else if(y||(z&&e.shiftKey)){e.preventDefault();redoF()}});
 const setTool=t=>{tool=t;$('#tp').classList.toggle('on',t==='pen');$('#te').classList.toggle('on',t==='er')};
 $('#tp').onclick=()=>setTool('pen');$('#te').onclick=()=>setTool('er');
 document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{col=b.dataset.c;setTool('pen')});
-$('#tc').onclick=()=>{cx.clearRect(0,0,cv.width,cv.height);if(bkey)ls.del(bkey)};
-$('#bdb').onclick=()=>$('#board').classList.add('open');$('#bcl').onclick=()=>$('#board').classList.remove('open');
+/* положение и размер доски */
+let G;try{G=JSON.parse(ls.get('oge-geom'))}catch(e){}
+if(!G){const w=Math.min(560,Math.round(innerWidth*.42));G={l:innerWidth-w-14,t:14,w,h:innerHeight-28}}
+function fit(){const m=$('main').getBoundingClientRect(),on=wide()&&!B.classList.contains('off')&&G.l+G.w/2>innerWidth/2;
+  $('#view').style.marginRight=on?Math.max(0,m.right-G.l+12)+'px':''}
+function place(){G.w=Math.max(300,Math.min(G.w,innerWidth-8));G.h=Math.max(260,Math.min(G.h,innerHeight-8));
+  G.l=Math.max(0,Math.min(G.l,innerWidth-G.w));G.t=Math.max(0,Math.min(G.t,innerHeight-G.h));
+  Object.assign(B.style,{left:G.l+'px',top:G.t+'px',width:G.w+'px',height:G.h+'px'});fit()}
+function drag(el,fn){el.onpointerdown=e=>{if(e.target.closest('button,input'))return;e.preventDefault();el.setPointerCapture(e.pointerId);
+  const x0=e.clientX,y0=e.clientY,g={...G};
+  el.onpointermove=ev=>{fn(g,ev.clientX-x0,ev.clientY-y0);place()};
+  el.onpointerup=()=>{el.onpointermove=el.onpointerup=null;ls.set('oge-geom',JSON.stringify(G))}}}
+drag($('#bh'),(g,dx,dy)=>{G.l=g.l+dx;G.t=g.t+dy});
+drag($('#rzr'),(g,dx,dy)=>{G.w=g.w+dx;G.h=g.h+dy});
+drag($('#rzl'),(g,dx,dy)=>{const w=Math.max(300,g.w-dx);G.l=g.l+g.w-w;G.w=w;G.h=g.h+dy});
+const toggle=()=>{if(wide()){B.classList.toggle('off');ls.set('oge-board-open',B.classList.contains('off')?'0':'1');fit()}else B.classList.toggle('open')};
+$('#bdb').onclick=toggle;$('#bcl').onclick=toggle;
+if(!wide()||ls.get('oge-board-open')==='0')B.classList.add('off');
+addEventListener('resize',place);place();
 /* ---- проверка ответа ---- */
 const norm=s=>String(s).toLowerCase().replace(/[−–—‒﹣－]/g,'-').replace(/[\s\u00a0()]/g,'').replace(/,/g,'.').replace(/\.$/,'').split(';').sort().join(';');
 const same=(a,b)=>{const x=norm(a),y=norm(b);if(x===y)return true;const A=x.split(';'),B=y.split(';');
@@ -103,7 +132,7 @@ function task(key,t,refresh){
   c.append(row,msg,sol);return c}
 /* ---- экраны ---- */
 function material(p,m,d){
-  const key='oge:'+p+':'+m,all=d.sections.flatMap(s=>s.tasks),chk=all.filter(t=>t.ans),box=h('div'),v=h('div');
+  const key='oge:'+p+':'+m,all=d.sections.flatMap(s=>s.tasks||[]),chk=all.filter(t=>t.ans),box=h('div'),v=h('div');
   const refresh=()=>prog(key,chk,box);v.append(h('h1',{textContent:d.title}));
   if(d.kind==='tasks'&&chk.length){v.append(box);refresh()}
   if(d.pages)v.append(h('details',{className:'card pg'},h('summary',{textContent:'КИМ: страницы варианта'}),d.pages.map(src=>{const i=h('img',{src,loading:'lazy'});i.onerror=()=>i.replaceWith(h('p',{className:'dim',textContent:'Нет файла '+src}));return i})));
