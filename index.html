@@ -1,11 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#1c1714">
 <title>Подготовка к ОГЭ</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#1c1714;--panel:#271f1a;--line:#40342b;--text:#efe4d6;--dim:#a99886;--acc:#cdb083;--on:#1c1714;--onacc:#1a1a1a;--ok:#4f9d63;--bad:#d46a6a}
 *{box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,a,summary{touch-action:manipulation}
+button,a.card,summary{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+button,a.card{transition:transform 120ms ease-out,border-color 120ms ease-out,background 120ms ease-out}
+button:active,a.card:active{transform:scale(.97)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){a.card:hover{border-color:var(--acc)}button:hover{border-color:var(--acc)}}
+.tx{white-space:pre-line}
+@media (max-width:560px){.row input{flex-basis:100%}.row button{flex:1}}
+.it{display:flex;justify-content:space-between;align-items:center;gap:12px}.it .st{flex:none;font-size:13px;color:var(--dim)}.it .st.full{color:var(--ok);font-weight:700}
+.score{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}.score b{font-size:20px}
+.pts{float:right;margin-left:8px;font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:1px 7px}
+.ghost{background:none;border-color:transparent;color:var(--dim);font-weight:600;padding:6px 8px}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Manrope,system-ui,sans-serif;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
 main{max-width:1400px;margin:0 auto}
 h1{font-size:21px;margin:6px 0}h2{font-size:17px;margin:18px 0 6px;color:var(--acc)}
@@ -57,6 +71,7 @@ const mix=(a,b,t)=>{const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)),A=p(a
 function applyTheme(bg,ac,save){
   const d=lum(bg)<128,w=d?'#ffffff':'#000000',tx=d?'#efe4d6':'#3a2f23',s=document.documentElement.style;
   s.setProperty('--bg',bg);s.setProperty('--panel',mix(bg,w,.06));s.setProperty('--line',mix(bg,w,.16));s.setProperty('--text',tx);s.setProperty('--dim',mix(tx,bg,.4));s.setProperty('--acc',ac);s.setProperty('--on',bg);s.setProperty('--onacc',lum(ac)<150?'#ffffff':'#1a1a1a');
+  document.querySelector('meta[name=theme-color]').content=bg;
   if(save)ls.set('oge-theme',JSON.stringify([bg,ac]));
 }
 (()=>{let t;try{t=JSON.parse(ls.get('oge-theme'))}catch(e){}
@@ -114,27 +129,38 @@ addEventListener('resize',place);place();
 const norm=s=>String(s).toLowerCase().replace(/[−–—‒﹣－]/g,'-').replace(/[\s\u00a0()]/g,'').replace(/,/g,'.').replace(/\.$/,'').split(';').sort().join(';');
 const same=(a,b)=>{const x=norm(a),y=norm(b);if(x===y)return true;const A=x.split(';'),B=y.split(';');
   return A.length===B.length&&A.every((v,i)=>v!==''&&B[i]!==''&&!isNaN(v)&&!isNaN(B[i])&&Number(v)===Number(B[i]))};
-function prog(key,list,box){const d=list.filter(t=>ls.get(key+':'+t.n)==='1').length;
-  box.replaceChildren(h('span',{className:'dim',textContent:`Решено с проверкой: ${d} из ${list.length}`}),h('div',{className:'bar'},h('i',{style:`width:${list.length?100*d/list.length:0}%`})))}
+const solved=(key,list)=>list.filter(t=>ls.get(key+':'+t.n)==='1');
+function prog(key,list,box,d){const ok=solved(key,list),n=ok.length;
+  const parts=[h('span',{className:'dim',textContent:`Решено с проверкой: ${n} из ${list.length}`})];
+  if(d&&d.grade){const g=d.grade,s=ok.reduce((a,t)=>a+(t.pts||0),0),m=s>=g['5']?5:s>=g['4']?4:s>=g['3']?3:2;
+    parts.unshift(h('div',{className:'score'},h('b',{textContent:`${s} из ${g.max} баллов`}),h('span',{className:'dim',textContent:n?`сейчас это «${m}»`:'оценка появится после первого верного ответа'})))}
+  box.replaceChildren(...parts,h('div',{className:'bar'},h('i',{style:`width:${list.length?100*n/list.length:0}%`})))}
 function task(key,t,refresh){
   const c=h('div',{className:'card'+(ls.get(key+':'+t.n)==='1'?' done':'')});
-  c.append(h('b',{},t.n?t.n+'. ':''),t.text||'');
+  if(t.pts)c.append(h('span',{className:'pts',textContent:t.pts+' б.'}));
+  c.append(h('b',{},t.n?t.n+'. ':''),h('span',{className:'tx',textContent:t.text||''}));
   if(t.img)c.append(h('img',{src:t.img,className:'tk'}));
-  const row=h('div',{className:'row'}),msg=h('div',{className:'msg'}),sol=h('div',{className:'sol',hidden:true,textContent:t.sol||'Решение пока не добавлено.'});
-  if(t.ans){const sv=key+':v:'+t.n,inp=h('input',{placeholder:'Ваш ответ',value:ls.get(sv)||''}),go=h('button',{className:'p',textContent:'Проверить'});
+  const row=h('div',{className:'row'}),msg=h('div',{className:'msg',role:'status'}),sol=h('div',{className:'sol',hidden:true,textContent:t.sol||'Решение пока не добавлено.'});
+  if(t.ans){const sv=key+':v:'+t.n,inp=h('input',{placeholder:t.ph||'Ваш ответ',value:ls.get(sv)||'',autocapitalize:'none',autocomplete:'off',spellcheck:false,enterKeyHint:'done'}),go=h('button',{className:'p',textContent:'Проверить'});
+    inp.setAttribute('aria-label','Ответ к заданию '+(t.n||''));inp.setAttribute('autocorrect','off');
     if(c.classList.contains('done')){msg.className='msg ok';msg.textContent='Верно!'}
     inp.oninput=()=>ls.set(sv,inp.value);
     const chk=()=>{if(!inp.value.trim())return;
       if(t.ans.some(a=>same(a,inp.value))){msg.className='msg ok';msg.textContent='Верно!';ls.set(key+':'+t.n,'1');c.classList.add('done');refresh()}
       else{msg.className='msg bad';msg.textContent='Неверно. Попробуйте ещё раз.';inp.select()}};
     go.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};row.append(inp,go)}
-  if(t.sol||t.ans)row.append(h('button',{textContent:'Решение',onclick:()=>{sol.hidden=!sol.hidden}}));
+  if(t.sol||t.ans){const sb=h('button',{textContent:'Решение'});sb.setAttribute('aria-expanded','false');
+    sb.onclick=()=>{sol.hidden=!sol.hidden;sb.setAttribute('aria-expanded',String(!sol.hidden));sb.textContent=sol.hidden?'Решение':'Скрыть решение'};row.append(sb)}
   c.append(row,msg,sol);return c}
 /* ---- экраны ---- */
 function material(p,m,d){
   const key='oge:'+p+':'+m,all=d.sections.flatMap(s=>s.tasks||[]),chk=all.filter(t=>t.ans),box=h('div'),v=h('div');
-  const refresh=()=>prog(key,chk,box);v.append(h('h1',{textContent:d.title}));
-  if(d.kind==='tasks'&&chk.length){v.append(box);refresh()}
+  const refresh=()=>prog(key,chk,box,d);v.append(h('h1',{textContent:d.title}));
+  if(d.kind==='tasks'&&chk.length){v.append(box);refresh();
+    const rs=h('button',{className:'ghost',textContent:'Сбросить прогресс'});let armed=0;
+    rs.onclick=()=>{if(!armed){armed=setTimeout(()=>{armed=0;rs.textContent='Сбросить прогресс'},3000);rs.textContent='Нажмите ещё раз, чтобы сбросить';return}
+      clearTimeout(armed);chk.forEach(t=>{ls.del(key+':'+t.n);ls.del(key+':v:'+t.n)});route()};
+    v.append(rs)}
   if(d.pages)v.append(h('details',{className:'card pg'},h('summary',{textContent:'КИМ: страницы варианта'}),d.pages.map(src=>{const i=h('img',{src,loading:'lazy'});i.onerror=()=>i.replaceWith(h('p',{className:'dim',textContent:'Нет файла '+src}));return i})));
   d.sections.forEach(s=>{v.append(h('h2',{textContent:s.t}));
     if(d.kind==='tasks')s.tasks.forEach(t=>v.append(task(key,t,refresh)));
@@ -147,7 +173,10 @@ async function route(){
     if(!p){$('#ttl').textContent='Подготовка к ОГЭ';const d=await get('index');
       v.replaceChildren(h('h1',{textContent:'Кто занимается?'}),...d.people.map(x=>h('a',{className:'card',href:'#'+x.id,textContent:x.t})))}
     else if(!m){if(!ID.test(p))throw 0;const d=await get(p+'/index');$('#ttl').textContent=d.title;
-      v.replaceChildren(...d.items.map(x=>h('a',{className:'card',href:'#'+p+'/'+x.id},h('b',{textContent:x.t}),h('div',{className:'dim',textContent:x.sub||''}))))}
+      v.replaceChildren(...d.items.map(x=>{const st=h('span',{className:'st'}),a=h('a',{className:'card it',href:'#'+p+'/'+x.id},h('div',{},h('b',{textContent:x.t}),h('div',{className:'dim',textContent:x.sub||''})),st);
+        get(p+'/'+x.id).then(m=>{const l=(m.sections||[]).flatMap(s=>s.tasks||[]).filter(t=>t.ans);if(!l.length)return;
+          const n=solved('oge:'+p+':'+x.id,l).length;st.textContent=n+' / '+l.length;st.classList.toggle('full',n===l.length)}).catch(()=>{});
+        return a}))}
     else{if(!ID.test(p)||!ID.test(m))throw 0;const d=await get(p+'/'+m);$('#ttl').textContent='';v.replaceChildren(material(p,m,d));scrollTo(0,0)}
   }catch(e){v.replaceChildren(h('p',{textContent:'Не удалось открыть страницу.'}))}}
 $('#back').onclick=()=>{const a=location.hash.slice(1).split('/');location.hash=a.length>1?'#'+a[0]:''};
