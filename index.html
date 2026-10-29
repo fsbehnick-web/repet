@@ -33,7 +33,7 @@ button{cursor:pointer;font-weight:700}button.p{background:var(--acc);color:var(-
 input{min-width:0;flex:1}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .msg{margin-top:8px;font-weight:700}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
 .sol{margin-top:10px;padding:10px;border-left:3px solid var(--acc);color:var(--dim);white-space:pre-line}
-img.tk,.pg img{max-width:100%;border-radius:10px;border:1px solid var(--line);margin:8px 0;background:#fff}
+img.tk,.pg a{display:block}.pg img{display:block;max-width:100%;border-radius:10px;border:1px solid var(--line);margin:8px 0;background:#fff}
 .bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 2px}.bar i{display:block;height:100%;background:var(--acc);width:0}
 .th{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.th button{padding:6px 10px;font-size:13px}
 summary{cursor:pointer;font-weight:700}
@@ -161,7 +161,7 @@ function material(p,m,d){
     rs.onclick=()=>{if(!armed){armed=setTimeout(()=>{armed=0;rs.textContent='Сбросить прогресс'},3000);rs.textContent='Нажмите ещё раз, чтобы сбросить';return}
       clearTimeout(armed);chk.forEach(t=>{ls.del(key+':'+t.n);ls.del(key+':v:'+t.n)});route()};
     v.append(rs)}
-  if(d.pages)v.append(h('details',{className:'card pg'},h('summary',{textContent:'КИМ: страницы варианта'}),d.pages.map(src=>{const i=h('img',{src,loading:'lazy'});i.onerror=()=>i.replaceWith(h('p',{className:'dim',textContent:'Нет файла '+src}));return i})));
+  if(d.pages)v.append(h('details',{className:'card pg'},h('summary',{textContent:'КИМ: страницы варианта'}),d.pages.map((src,k)=>{const i=h('img',{src,loading:'lazy',alt:`Страница ${k+1} варианта`}),a=h('a',{href:src,target:'_blank',rel:'noopener',title:'Открыть в полном размере'},i);i.onerror=()=>a.replaceWith(h('p',{className:'dim',textContent:'Нет файла '+src}));return a})));
   d.sections.forEach(s=>{v.append(h('h2',{textContent:s.t}));
     if(d.kind==='tasks')s.tasks.forEach(t=>v.append(task(key,t,refresh)));
     else v.append(h('div',{className:'card'},h('ul',{},s.l.map(x=>h('li',{textContent:x})))))});
