@@ -128,9 +128,14 @@ $('#bdb').onclick=toggle;$('#bcl').onclick=toggle;
 if(!wide()||ls.get('oge-board-open')==='0')B.classList.add('off');
 addEventListener('resize',place);place();
 /* ---- проверка ответа ---- */
-const norm=s=>String(s).toLowerCase().replace(/[−–—‒﹣－]/g,'-').replace(/[\s\u00a0()]/g,'').replace(/,/g,'.').replace(/\.$/,'').split(';').sort().join(';');
-const same=(a,b)=>{const x=norm(a),y=norm(b);if(x===y)return true;const A=x.split(';'),B=y.split(';');
-  return A.length===B.length&&A.every((v,i)=>v!==''&&B[i]!==''&&!isNaN(v)&&!isNaN(B[i])&&Number(v)===Number(B[i]))};
+const canon=s=>String(s).toLowerCase().replace(/[−–—‒﹣－]/g,'-').replace(/[\s ]/g,'').replace(/,/g,'.').replace(/\.$/,'');
+// Ответ со скобками — точки/интервалы: порядок чисел внутри скобок важен, сами точки можно перечислять в любом порядке.
+// Без скобок — набор чисел через «;», порядок не важен.
+const groups=(s,tuple)=>{const c=canon(s),g=tuple&&c.match(/\([^()]*\)/g);
+  return (g?g.map(x=>x.slice(1,-1)):[c.replace(/[()]/g,'')]).map(x=>tuple?x.split(';'):x.split(';').sort()).sort((p,q)=>p.join(';')<q.join(';')?-1:1)};
+const item=(v,w)=>v===w||v!==''&&w!==''&&!isNaN(v)&&!isNaN(w)&&Number(v)===Number(w);
+const same=(a,b)=>{const t=/\(/.test(a),A=groups(a,t),B=groups(b,t);
+  return A.length===B.length&&A.every((g,i)=>g.length===B[i].length&&g.every((v,j)=>item(v,B[i][j])))};
 const solved=(key,list)=>list.filter(t=>ls.get(key+':'+t.n)==='1');
 function prog(key,list,box,d){const ok=solved(key,list),n=ok.length;
   const parts=[h('span',{className:'dim',textContent:`Решено с проверкой: ${n} из ${list.length}`})];
