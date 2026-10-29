@@ -42,7 +42,7 @@ summary{cursor:pointer;font-weight:700}
 #bh{display:flex;justify-content:space-between;align-items:center;cursor:move;font-weight:700;user-select:none;touch-action:none}
 #bh button{padding:4px 10px;font-size:13px}
 #board .tb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#board .tb button{padding:6px 10px;font-size:14px}
-#bw{width:80px;padding:0}.sw{width:28px;height:28px;padding:0;border-radius:50%}
+#bw{width:80px;padding:0}.sw{width:28px;height:28px;padding:0;border-radius:50%}.sw.on{outline-offset:2px}
 #cvw{flex:1;overflow:auto;border-radius:10px;border:1px dashed var(--line)}
 #cv{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
 .rz{position:absolute;bottom:0;width:20px;height:20px;touch-action:none}
@@ -55,8 +55,8 @@ summary{cursor:pointer;font-weight:700}
 <div class="wrap"><div id="view"></div>
 <aside id="board"><div id="rzl" class="rz"></div><div id="bh"><span>Доска</span><button id="bcl">Скрыть</button></div><div class="tb">
 <button id="tp" class="on">Ручка</button><button id="te">Ластик</button>
-<button class="sw" data-c="auto" title="Основной" style="background:var(--text)"></button><button class="sw" data-c="#e5534b" style="background:#e5534b"></button><button class="sw" data-c="#4f8cff" style="background:#4f8cff"></button>
-<input id="bw" type="range" min="1" max="10" value="3"><button id="tu" title="Ctrl+Z">Отменить</button><button id="tc">Очистить</button></div>
+<button class="sw on" data-c="auto" title="Основной цвет" aria-label="Основной цвет" aria-pressed="true" style="background:var(--text)"></button><button class="sw" data-c="#e5534b" title="Красный" aria-label="Красный" aria-pressed="false" style="background:#e5534b"></button><button class="sw" data-c="#4f8cff" title="Синий" aria-label="Синий" aria-pressed="false" style="background:#4f8cff"></button>
+<input id="bw" type="range" min="1" max="10" value="3" title="Толщина линии" aria-label="Толщина линии"><button id="tu" title="Ctrl+Z">Отменить</button><button id="tc">Очистить</button></div>
 <div id="cvw"><canvas id="cv" width="1000" height="1400"></canvas></div><div id="rzr" class="rz"></div></aside></div>
 </main><script>
 const $=s=>document.querySelector(s);
@@ -105,10 +105,11 @@ addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const
   if(z&&!e.shiftKey){e.preventDefault();undo()}else if(y||(z&&e.shiftKey)){e.preventDefault();redoF()}});
 const setTool=t=>{tool=t;$('#tp').classList.toggle('on',t==='pen');$('#te').classList.toggle('on',t==='er')};
 $('#tp').onclick=()=>setTool('pen');$('#te').onclick=()=>setTool('er');
-document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{col=b.dataset.c;setTool('pen')});
+document.querySelectorAll('.sw').forEach((b,_,all)=>b.onclick=()=>{col=b.dataset.c;all.forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',String(x===b))});setTool('pen')});
 /* положение и размер доски */
 let G;try{G=JSON.parse(ls.get('oge-geom'))}catch(e){}
-if(!G){const w=Math.min(560,Math.round(innerWidth*.42));G={l:innerWidth-w-14,t:14,w,h:innerHeight-28}}
+// по умолчанию — под верхней панелью, чтобы не закрывать кнопки «Доска» и «Темы»
+if(!G){const w=Math.min(560,Math.round(innerWidth*.42)),t=Math.round($('.top').getBoundingClientRect().bottom)+8;G={l:innerWidth-w-14,t,w,h:innerHeight-t-14}}
 function fit(){const m=$('main').getBoundingClientRect(),on=wide()&&!B.classList.contains('off')&&G.l+G.w/2>innerWidth/2;
   $('#view').style.marginRight=on?Math.max(0,m.right-G.l+12)+'px':''}
 function place(){G.w=Math.max(300,Math.min(G.w,innerWidth-8));G.h=Math.max(260,Math.min(G.h,innerHeight-8));
